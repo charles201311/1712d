@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bobo.cms.dao.ArticleMapper">
+
+	<resultMap type="Article" id="articleResultMap">
+		<id column="id" property="id" />
+		<!-- 基本信息 -->
+		<result column="title" property="title" />
+		<result column="content" property="content" />
+		<result column="picture" property="picture" />
+		<result column="channel_Id" property="channelId" />
+		<result column="category_Id" property="categoryId" />
+		<result column="user_Id" property="userId" />
+		<result column="hits" property="hits" />
+		<result column="status" property="status" />
+		<result column="deleted" property="deleted" />
+		<result column="created" property="created" />
+		<result column="updated" property="updated" />
+		<result column="hot" property="hot" />
+		<result column="content_Type" property="contentType" />
+		<result column="keywords" property="keywords" />
+		<result column="original" property="original" />
+		<result column="comment_num" property="commentNum" />
+		<!-- 封装一对一的关系对象 -->
+		<association property="channel" javaType="Channel"
+			select="selectByChannelId" column="channel_id" />
+		<association property="category" javaType="Category"
+			select="selectByCategoryId" column="category_id" />
+		<association property="user" javaType="User"
+			select="selectByUserId" column="user_id" />
+	</resultMap>
+
+
+
+
+	<!-- 查询所有的文章 -->
+	<select id="selects" resultMap="articleResultMap">
+		select * from cms_article
+		<where>
+			<!-- 根据用户查询文章 -->
+			<if test="userId!=null">
+				user_id =#{userId}
+			</if>
+			<!-- 根据文章的审核状态 -->
+			<if test="status!=null">
+				and status =#{status}
+			</if>
+			<!-- 按照删除状态 0：未删除 1：删除 -->
+			<if test="deleted!=null">
+			  and deleted =#{deleted}
+			</if>
+			<!-- 根据文章的标题 -->
+			<if test="title!=null and title!=''">
+				and title like "%"#{title} "%"
+			</if>
+			<!-- 根据栏目查询 -->
+			<if test="channelId!=null">
+				and channel_Id =#{channelId}
+			</if>
+			<!-- 根据分类查询 -->
+			<if test="categoryId!=null">
+				and category_Id =#{categoryId}
+			</if>
+			<!-- 热点文章 -->
+			<if test="hot!=null">
+				and hot =#{hot}
+			</if>
+			<!-- 按文章类型查询 -->
+			<if test="contentType!=null">
+				and content_Type =#{contentType}
+			</if>
+		</where>
+
+		<!-- 按照文章发布时间倒序排序 -->
+		order by created desc
+
+	</select>
+	<!-- 单个文章 -->
+	<select id="select"  resultMap="articleResultMap">
+
+		select * from cms_article where
+		id =#{id}
+
+	</select>
+
+
+
+	<!-- 增加文章 -->
+	<insert id="insert">
+		insert into cms_article
+		(title,summary,content,picture,channel_Id,category_Id,user_Id,hits,hot,status,deleted,
+		created,updated,keywords,original,content_type)
+		values(#{title},#{summary},#{content},#{picture},#{channelId},#{categoryId},
+		#{userId},#{hits},#{hot},#{status},#{deleted},#{created},#{updated},#{keywords},
+		#{original},#{contentType})
+	</insert>
+
+
+
+
+	<select id="selectByChannelId" resultType="Channel">
+		select * from
+		cms_channel where id =#{channelId}
+	</select>
+
+	<select id="selectByCategoryId" resultType="Category">
+		select * from
+		cms_category where id =#{categoryId}
+	</select>
+
+	<select id="selectByUserId" resultType="User">
+		select * from cms_user
+		where id =#{userId}
+	</select>
+
+
+	<!-- 修改文章 -->
+	<update id="update">
+
+		update cms_article
+		<trim prefix="set" suffix="where id =#{id}" suffixOverrides=",">
+			<if test="title!=null and title!=''">
+				title =#{title},
+			</if>
+			<if test="status!=null">
+				status =#{status},
+			</if>
+			<if test="hot!=null">
+				hot =#{hot},
+			</if>
+		</trim>
+
+	</update>
+</mapper>

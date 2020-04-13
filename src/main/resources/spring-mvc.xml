@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd">
+
+   <!-- 注入属性文件 -->
+   <context:property-placeholder location="classpath:cms.properties"/>
+
+	<!-- 扫描器 -->
+	<context:component-scan
+		base-package="com.bobo.cms.controller"></context:component-scan>
+	<!-- 视图解析图 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 配置前缀 -->
+		<property name="prefix" value="/WEB-INF/view/"></property>
+		<!-- 配置后缀 -->
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+
+	<!-- 不拦截静态资源 -->
+	<mvc:default-servlet-handler />
+	<!-- mvc注解驱动 -->
+	<mvc:annotation-driven />
+	<!-- 文件上传的处理类 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver"></bean>
+	<!-- 配置拦截器 -->
+	<mvc:interceptors>
+		<!-- 1个人中心拦截器 -->
+		<mvc:interceptor>
+			<!-- 拦截规则 -->
+			<mvc:mapping path="/my/**" />
+			<!-- 不拦截规则 -->
+			<mvc:exclude-mapping path="/resource/**" />
+			<!-- 拦截器处理类 -->
+			<bean class="com.bobo.cms.util.MyInterceptor" />
+		</mvc:interceptor>
+
+		<!-- 2管理员中心拦截器 -->
+		<mvc:interceptor>
+			<!-- 拦截规则 -->
+			<mvc:mapping path="/admin/**" />
+			<!-- 不拦截规则 -->
+			<mvc:exclude-mapping path="/resource/**" />
+			<!-- 拦截器处理类 -->
+			<bean class="com.bobo.cms.util.AdminInterceptor" />
+		</mvc:interceptor>
+
+
+	</mvc:interceptors>
+
+  <!-- Spring线程池 -->
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <!-- 核心线程数 -->
+        <property name="corePoolSize" value="10" />
+        <!-- 线程池维护线程的最大数量 -->
+        <property name="maxPoolSize" value="10" />
+       <!-- 允许的空闲时间, 默认60秒 -->
+        <property name="keepAliveSeconds" value="60" />
+        <!-- 任务队列 -->
+        <property name="queueCapacity" value="1" />
+        <!-- 线程超过空闲时间限制，均会退出直到线程数量为0 -->
+        <property name="allowCoreThreadTimeOut" value="true"/>
+        <!-- 线程超过空闲时间限制，均会退出直到线程数量为0 -->
+        <!-- 对拒绝task的处理策略 -->
+        <property name="rejectedExecutionHandler">
+            <bean class="java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy" />
+        </property>
+    </bean>
+</beans>
